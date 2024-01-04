@@ -1,0 +1,18 @@
+//creating node modules
+npm init
+//installing dependencies
+npm install cors
+npm install csv-parse
+npm install express
+npm install multer
+npm install path
+//create two terminals which needes to run both at same time where a flask and another node files are going to run
+terminal1(Flask terminal) --> python myapp.py
+terminal2(node file) --> node myjs.js
+
+//steps to use;
+step1: Upload the image;
+step2: Click on Submit
+step3: Click on predict to start predecting
+Step4: Click on fetch result to get the result of whether it is morphed or not image
+
