@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Metamorphic Vision</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+
+    .container {
+      background-color: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .custom-file-upload {
+      display: block;
+      width: 100%;
+      margin: 15px 0;
+      border: 2px dashed #ddd;
+      border-radius: 5px;
+      padding: 10px;
+      text-align: center;
+      cursor: pointer;
+      color: #666;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .btn-custom {
+      background-color: #044275;
+      color: white;
+      border-radius: 5px;
+      padding: 10px 20px;
+      cursor: pointer;
+      display: block;
+      width: 100%;
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .btn-custom:hover {
+      background-color: #0b314f;
+    }
+    .loader {
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #3498db;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 2s linear infinite;
+      display: none; /* Hide by default */
+      margin: auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #previewImg {
+      max-width: 100%;
+      height: auto;
+      display: none; /* Hide by default */
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="margin: 10px 10px;">Morphed Image Detection</h1>
+  <div class="container">
+    <form id="uploadForm">
+      <label for="file" class="custom-file-upload">
+        Upload Image
+        <input type="file" name="file" id="file" onchange="previewFile()">
+      </label>
+      
+          <div id="imagePreview">
+            <img id="previewImg" alt="Image preview...">
+            <div class="loader" id="loader"></div>
+          </div>
+      <button type="submit" class="btn-custom">Submit</button>
+    </form>
+
+    <form id="predictForm" action="{{ url_for('predict') }}" method="POST">
+      <input type="submit" class="btn-custom" value="Predict">
+    </form>
+
+    <button id="displayBtn" class="btn-custom">Fetch Result</button>
+    <div id="result" style="font-size: 25px;"></div>
+  </div>
+
+  <script>
+    function previewFile() {
+      const preview = document.getElementById('previewImg');
+      const file = document.getElementById('file').files[0];
+      const reader = new FileReader();
+      reader.addEventListener("load", function () {
+        // Convert image file to base64 string
+        preview.src = reader.result;
+        preview.style.display = 'block';
+      }, false);
+
+      if (file) {
+        reader.readAsDataURL(file);
+      }
+    }
+
+    document.getElementById('uploadForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const formData = new FormData();
+      const fileInput = document.getElementById('file');
+      formData.append('file', fileInput.files[0]);
+
+      document.getElementById('loader').style.display = 'block'; // Show loading symbol
+
+      fetch('http://localhost:5000/ref', {
+        method: 'POST',
+        body: formData,
+      })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        document.getElementById('loader').style.display = 'none'; // Hide loading symbol
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('loader').style.display = 'none'; // Hide loading symbol on error
+      });
+
+    });
+    document.getElementById('displayBtn').addEventListener('click', () => {
+      fetch('http://localhost:5000/result')
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('result').innerHTML = data.result > 0.5 ? "Not Morphed" : "Morphed";
+        })
+        .catch(error => console.error('Error:', error));
+    });
+  </script>
+</body>
+</html>
